@@ -21,19 +21,17 @@ public class QuartzConfiguration {
  
 	private static final int TIME = 2; // 更新频率
 
-	@Bean
-	public JobDetail weatherDataSyncJobDetail() {
-		return JobBuilder.newJob(WeatherDataSyncJob.class).withIdentity("weatherDataSyncJob")
-		.storeDurably().build();
-	}
-
-	@Bean
-	public Trigger weatherDataSyncTrigger() {
-		
-		SimpleScheduleBuilder schedBuilder = SimpleScheduleBuilder.simpleSchedule()
-				.withIntervalInSeconds(TIME).repeatForever();
-		
-		return TriggerBuilder.newTrigger().forJob(weatherDataSyncJobDetail())
-				.withIdentity("weatherDataSyncTrigger").withSchedule(schedBuilder).build();
-	}
+//	public JobDetail weatherDataSyncJobDetail() {
+//		return JobBuilder.newJob(WeatherDataSyncJob.class).withIdentity("weatherDataSyncJob")
+//		.storeDurably().build();
+//	}
+//
+//	public Trigger weatherDataSyncTrigger() {
+//
+//		SimpleScheduleBuilder schedBuilder = SimpleScheduleBuilder.simpleSchedule()
+//				.withIntervalInSeconds(TIME).repeatForever();
+//
+//		return TriggerBuilder.newTrigger().forJob(weatherDataSyncJobDetail())
+//				.withIdentity("weatherDataSyncTrigger").withSchedule(schedBuilder).build();
+//	}
 }

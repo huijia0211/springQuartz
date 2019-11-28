@@ -22,7 +22,7 @@ public class QuartTask implements Serializable {
 
     private String corn;
 
-    private boolean status;
+    private Integer status;
 
     private static final long serialVersionUID = 1L;
 

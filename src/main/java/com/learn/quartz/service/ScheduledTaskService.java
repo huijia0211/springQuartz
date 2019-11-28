@@ -35,4 +35,5 @@ public interface ScheduledTaskService {
      */
     void initAllTask(List<QuartTask> scheduledTaskBeanList);
 
+    void doStartTask(QuartTask scheduledTask);
 }

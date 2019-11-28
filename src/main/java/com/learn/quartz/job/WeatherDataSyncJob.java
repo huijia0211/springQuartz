@@ -1,6 +1,7 @@
 package com.learn.quartz.job;
 
 import lombok.extern.slf4j.Slf4j;
+import org.quartz.Job;
 import org.quartz.JobExecutionContext;
 import org.quartz.JobExecutionException;
 import org.springframework.scheduling.quartz.QuartzJobBean;
@@ -12,12 +13,11 @@ import org.springframework.scheduling.quartz.QuartzJobBean;
  * @author <a href="https://waylau.com">Way Lau</a> 
  */
 @Slf4j
-public class WeatherDataSyncJob extends QuartzJobBean {
+public class WeatherDataSyncJob implements Job {
 
 	@Override
-	protected void executeInternal(JobExecutionContext context) throws JobExecutionException {
+	public void execute(JobExecutionContext context) throws JobExecutionException {
 		log.info("Weather Data Sync Job. Start！");
 		log.info("Weather Data Sync Job. End！");   //定时执行
 	}
-
 }

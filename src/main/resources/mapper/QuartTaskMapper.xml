@@ -111,4 +111,13 @@
         from
             quart_task
     </select>
+
+    <select id="getActivatedTaskList" resultMap="BaseResultMap">
+        select
+            <include refid="Base_Column_List"/>
+        from
+            quart_task
+        where
+            status = 1
+    </select>
 </mapper>

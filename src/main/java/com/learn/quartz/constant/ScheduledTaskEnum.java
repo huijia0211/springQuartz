@@ -4,6 +4,7 @@ import com.learn.quartz.job.ScheduledTask01;
 import com.learn.quartz.job.ScheduledTask02;
 import com.learn.quartz.job.ScheduledTask03;
 import com.learn.quartz.job.ScheduledTaskJob;
+import org.quartz.Job;
 import org.springframework.context.annotation.Bean;
 
 import java.util.Map;
@@ -35,9 +36,9 @@ public enum ScheduledTaskEnum {
     /**
      * 定时任务 执行实现类
      */
-    private ScheduledTaskJob scheduledTaskJob;
+    private Job scheduledTaskJob;
 
-    ScheduledTaskEnum(String taskKey, ScheduledTaskJob scheduledTaskJob) {
+    ScheduledTaskEnum(String taskKey, Job scheduledTaskJob) {
         this.taskKey = taskKey;
         this.scheduledTaskJob = scheduledTaskJob;
     }
@@ -46,11 +47,11 @@ public enum ScheduledTaskEnum {
      * 初始化 所有任务
      */
     @Bean(name="scheduledTaskJobMap")
-    public static Map<String, ScheduledTaskJob> initScheduledTask() {
-        if (ScheduledTaskEnum.values().length < 0) {
+    public static Map<String, Job> initScheduledTask() {
+        if (ScheduledTaskEnum.values().length <= 0) {
             return new ConcurrentHashMap<>();
         }
-        Map<String, ScheduledTaskJob> scheduledTaskJobMap = new ConcurrentHashMap<>();
+        Map<String, Job> scheduledTaskJobMap = new ConcurrentHashMap<>();
         for (ScheduledTaskEnum taskEnum : ScheduledTaskEnum.values()) {
             scheduledTaskJobMap.put(taskEnum.taskKey, taskEnum.scheduledTaskJob);
         }

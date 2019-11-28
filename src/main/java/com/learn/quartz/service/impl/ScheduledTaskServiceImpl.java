@@ -1,26 +1,18 @@
 package com.learn.quartz.service.impl;
 
 import com.learn.quartz.dao.QuartTaskMapper;
-import com.learn.quartz.job.ScheduledTaskJob;
 import com.learn.quartz.pojo.QuartTask;
 import com.learn.quartz.service.ScheduledTaskService;
 import lombok.extern.slf4j.Slf4j;
-
+import org.quartz.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.scheduling.Trigger;
-import org.springframework.scheduling.TriggerContext;
-import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
-import org.springframework.scheduling.support.CronTrigger;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.locks.ReentrantLock;
 
 /**
@@ -36,11 +28,9 @@ public class ScheduledTaskServiceImpl implements ScheduledTaskService {
      * 可重入锁
      */
     private ReentrantLock lock = new ReentrantLock();
-    /**
-     * 定时任务线程池
-     */
+
     @Autowired
-    private ThreadPoolTaskScheduler threadPoolTaskScheduler;
+    private Scheduler sched;
     /**
      * 所有定时任务存放Map
      * key :任务 key
@@ -48,12 +38,7 @@ public class ScheduledTaskServiceImpl implements ScheduledTaskService {
      */
     @Autowired
     @Qualifier(value = "scheduledTaskJobMap")
-    private Map<String, ScheduledTaskJob> scheduledTaskJobMap;
-
-    /**
-     * 存放已经启动的任务map
-     */
-    private Map<String, ScheduledFuture> scheduledFutureMap = new ConcurrentHashMap<>();
+    private Map<String, Job> scheduledTaskJobMap;
 
     /**
      * 所有任务列表
@@ -61,19 +46,19 @@ public class ScheduledTaskServiceImpl implements ScheduledTaskService {
     @Override
     public List<QuartTask> taskList() {
         log.info(">>>>>> 获取任务列表开始 >>>>>> ");
-        //数据库查询所有任务 => 未做分页
-        List<QuartTask> taskBeanList = taskMapper.getAllTask();
-        if (CollectionUtils.isEmpty(taskBeanList)) {
-            return new ArrayList<>();
-        }
-
-        for (QuartTask taskBean : taskBeanList) {
-            String taskKey = taskBean.getId().toString();
-            //是否启动标记处理
-            taskBean.setStatus(this.isStart(taskKey));
-        }
-        log.info(">>>>>> 获取任务列表结束 >>>>>> ");
-        return taskBeanList;
+//        //数据库查询所有任务 => 未做分页
+//        List<QuartTask> taskBeanList = taskMapper.getAllTask();
+//        if (CollectionUtils.isEmpty(taskBeanList)) {
+//            return new ArrayList<>();
+//        }
+//
+//        for (QuartTask taskBean : taskBeanList) {
+//            String taskKey = taskBean.getId().toString();
+//            //是否启动标记处理
+//            taskBean.setStatus(this.isStart(taskKey));
+//        }
+//        log.info(">>>>>> 获取任务列表结束 >>>>>> ");
+        return null;
     }
 
 
@@ -114,18 +99,18 @@ public class ScheduledTaskServiceImpl implements ScheduledTaskService {
      */
     @Override
     public Boolean stop(String taskKey) {
-        log.info(">>>>>> 进入停止任务 {} >>>>>>", taskKey);
-        //当前任务实例是否存在
-        boolean taskStartFlag = scheduledFutureMap.containsKey(taskKey);
-        log.info(">>>>>> 当前任务实例是否存在 {}", taskStartFlag);
-        if (taskStartFlag) {
-        //获取任务实例
-            ScheduledFuture scheduledFuture = scheduledFutureMap.get(taskKey);
-        //关闭实例
-            scheduledFuture.cancel(true);
-        }
-        log.info(">>>>>> 结束停止任务 {} >>>>>>", taskKey);
-        return taskStartFlag;
+//        log.info(">>>>>> 进入停止任务 {} >>>>>>", taskKey);
+//        //当前任务实例是否存在
+//        boolean taskStartFlag = scheduledFutureMap.containsKey(taskKey);
+//        log.info(">>>>>> 当前任务实例是否存在 {}", taskStartFlag);
+//        if (taskStartFlag) {
+//            //获取任务实例
+//            ScheduledFuture scheduledFuture = scheduledFutureMap.get(taskKey);
+//            //关闭实例
+//            scheduledFuture.cancel(true);
+//        }
+//        log.info(">>>>>> 结束停止任务 {} >>>>>>", taskKey);
+        return null;
     }
 
     /**
@@ -165,37 +150,42 @@ public class ScheduledTaskServiceImpl implements ScheduledTaskService {
     /**
      * 执行启动任务
      */
-    private void doStartTask(QuartTask scheduledTask) {
+    @Override
+    @SuppressWarnings("unchecked")
+    public void doStartTask(QuartTask scheduledTask) {
         //任务key
         String taskKey = scheduledTask.getId().toString();
         //定时表达式
         String taskCron = scheduledTask.getCorn();
+        try {
         //获取需要定时调度的接口
-        ScheduledTaskJob scheduledTaskJob = scheduledTaskJobMap.get(taskKey);
         log.info(">>>>>> 任务 [ {} ] ,cron={}", scheduledTask.getMethod(), taskCron);
-        ScheduledFuture scheduledFuture = threadPoolTaskScheduler.schedule(scheduledTaskJob,
-                new Trigger() {
-                    @Override
-                    public Date nextExecutionTime(TriggerContext triggerContext) {
-                        CronTrigger cronTrigger = new CronTrigger(taskCron);
-                        return cronTrigger.nextExecutionTime(triggerContext);
-                    }
-                });
-        //将启动的任务放入 map
-        scheduledFutureMap.put(taskKey, scheduledFuture);
+        JobDetail job = JobBuilder.newJob((Class<? extends Job>) Class.forName(scheduledTask.getJobClass()))
+                .withIdentity(JobKey.jobKey(taskKey))
+                .build();
+
+        CronTrigger trigger = TriggerBuilder.newTrigger()
+                .withIdentity(TriggerKey.triggerKey(taskKey))
+                .withSchedule(CronScheduleBuilder.cronSchedule(taskCron)).build();
+        sched.scheduleJob(job, trigger);
+
+        } catch (Exception e) {
+            log.info("name = {} is fail", scheduledTask.getName());
+        }
     }
 
     /**
      * 任务是否已经启动
      */
     private Boolean isStart(String taskKey) {
-        //校验是否已经启动
-        if (scheduledFutureMap.containsKey(taskKey)) {
-            if (!scheduledFutureMap.get(taskKey).isCancelled()) {
-                return true;
-            }
+        boolean result = false;
+        try {
+            result = sched.checkExists(TriggerKey.triggerKey(taskKey));
+            log.info("taskKey isStart result = {}", result);
+        } catch (SchedulerException e) {
+            log.error("msg:", e);
         }
-        return false;
+        return result;
     }
 
 }

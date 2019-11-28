@@ -1,7 +1,6 @@
 package com.learn.quartz.dao;
 
 import com.learn.quartz.pojo.QuartTask;
-
 import java.util.List;
 
 public interface QuartTaskMapper {
@@ -18,4 +17,6 @@ public interface QuartTaskMapper {
     int updateByPrimaryKey(QuartTask record);
 
     List<QuartTask> getAllTask();
+
+    List<QuartTask> getActivatedTaskList();
 }
