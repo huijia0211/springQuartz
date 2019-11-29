@@ -8,16 +8,22 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.scheduling.quartz.SchedulerFactoryBean;
+import org.springframework.transaction.PlatformTransactionManager;
 
 import javax.sql.DataSource;
 import java.io.IOException;
 
 @Configuration
 public class QuartzConfigurer {
+
     @Autowired
-    DataSource dataSource;
+    private DataSource dataSource;
+
     @Autowired
-    TaskJobFactory jobFactory;
+    private TaskJobFactory jobFactory;
+
+    @Autowired
+    private PlatformTransactionManager txManager;
 
     @Bean(name = "SchedulerFactory")
     public SchedulerFactoryBean schedulerFactoryBean() throws IOException {
@@ -31,6 +37,8 @@ public class QuartzConfigurer {
         factory.setQuartzProperties(propertiesFactoryBean.getObject());
         factory.setJobFactory(jobFactory);
         factory.setDataSource(dataSource);
+        factory.setTransactionManager(txManager);
+        factory.setOverwriteExistingJobs(true);
         return factory;
     }
 

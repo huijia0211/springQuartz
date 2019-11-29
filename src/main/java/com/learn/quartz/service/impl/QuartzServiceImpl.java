@@ -8,6 +8,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -18,13 +19,14 @@ public class QuartzServiceImpl implements QuartzService {
 
     @Autowired
     Scheduler scheduler;
+
     /**
      * 程序启动时初始化 ==> 启动所有正常状态的任务
      */
     @Override
-    public void initAllTask(List<QuartTask> scheduledTaskBeanList) {
-        log.info("程序启动 ==> 初始化所有任务开始 ！size={}", scheduledTaskBeanList.size());
-        if (CollectionUtils.isEmpty(scheduledTaskBeanList)) {
+    public void initAllTask(List<QuartTask> quartTaskList) {
+        log.info("程序启动 ==> 初始化所有任务开始 ！");
+        if (CollectionUtils.isEmpty(quartTaskList)) {
             try {
                 scheduler.shutdown();
             } catch (SchedulerException e) {
@@ -32,49 +34,45 @@ public class QuartzServiceImpl implements QuartzService {
             }
             return;
         }
-        for (QuartTask scheduledTask : scheduledTaskBeanList) {
+        for (QuartTask quartTask : quartTaskList) {
             //任务 key
-            TriggerKey triggerKey = TriggerKey.triggerKey(scheduledTask.getName(), scheduledTask.getGroupName());
+            TriggerKey triggerKey = TriggerKey.triggerKey(quartTask.getName(), quartTask.getGroupName());
             boolean result = false;
             try {
                 result = scheduler.checkExists(triggerKey);
-                log.info("checkExists result = {}", result);
+                log.info("name = {}, checkExists result = {}", quartTask.getName(), result);
             } catch (SchedulerException e) {
-                log.error("checkExists msg:", e);
+                log.error("name = {}, checkExists msg:", quartTask.getName(), e);
             }
-            //如果存在
+            //如果数据库存在，先删除
             if (result) {
-                if (Integer.valueOf(1).equals(scheduledTask.getStatus())) {
-                    //update
-                    String params = scheduledTask.getMethod();
-                    Map<String, Object> map = new HashMap<>();
-                    map.put("params", params);
-                    this.updateJob(triggerKey, scheduledTask.getCorn(), map);
-                } else {
-                    //delete
-                    this.deleteJob(scheduledTask.getName(), scheduledTask.getGroupName());
-                }
-            } else {
-                //启动任务
-                if (Integer.valueOf(1).equals(scheduledTask.getStatus())) {
-                    this.addJob(scheduledTask);
-                }
+                this.deleteJob(quartTask.getName(), quartTask.getGroupName());
+            }
+            //重新添加任务
+            if (Integer.valueOf(1).equals(quartTask.getStatus())) {
+                this.addJob(quartTask);
             }
         }
-        log.info("程序启动 ==> 初始化所有任务结束 ！size={}", scheduledTaskBeanList.size());
+        log.info("程序启动 ==> 初始化所有任务结束 ！");
     }
 
-    private void addJob(QuartTask scheduledTask) {
+    @Override
+    public void addJob(QuartTask quartTask) {
+        TriggerKey triggerKey = TriggerKey.triggerKey(quartTask.getName(), quartTask.getGroupName());
         Class<?> aClass = null;
         try {
-            aClass = Class.forName(scheduledTask.getJobClass());
-        } catch (ClassNotFoundException e) {
-            e.printStackTrace();
+            aClass = Class.forName(quartTask.getJobClass());
+            boolean result = scheduler.checkExists(triggerKey);
+            if (result) {
+                return;
+            }
+        } catch (Exception e) {
+            log.error("addJob is fail, msg : ", e);
         }
-        String name = scheduledTask.getName();
-        String groupName = scheduledTask.getGroupName();
-        String corn = scheduledTask.getCorn();
-        String params = scheduledTask.getMethod();
+        String name = quartTask.getName();
+        String groupName = quartTask.getGroupName();
+        String corn = quartTask.getCorn();
+        String params = quartTask.getMethod();
         Map<String, Object> map = new HashMap<>();
         map.put("params", params);
         this.addJob(aClass, name, groupName, corn, map);
@@ -97,7 +95,7 @@ public class QuartzServiceImpl implements QuartzService {
             //表达式调度构建器(即任务执行的时间)
             CronScheduleBuilder scheduleBuilder = CronScheduleBuilder.cronSchedule(cronExp);
             //按新的cronExpression表达式构建一个新的trigger
-            CronTrigger trigger = TriggerBuilder.newTrigger().withIdentity(name, groupName).withSchedule(scheduleBuilder).build();
+            CronTrigger trigger = TriggerBuilder.newTrigger().startAt(new Date()).withIdentity(name, groupName).withSchedule(scheduleBuilder).build();
             //获得JobDataMap，写入数据
             if (param != null) {
                 trigger.getJobDataMap().putAll(param);
@@ -107,43 +105,11 @@ public class QuartzServiceImpl implements QuartzService {
             e.printStackTrace();
         }
     }
-
-    /**
-     * 暂停job
-     *
-     * @param name      任务名称
-     * @param groupName 任务所在组名称
-     */
-    @Override
-    public void pauseJob(String name, String groupName) {
-        try {
-            scheduler.pauseJob(JobKey.jobKey(name, groupName));
-        } catch (SchedulerException e) {
-            e.printStackTrace();
-        }
-    }
-
-    /**
-     * 恢复job
-     *
-     * @param name      任务名称
-     * @param groupName 任务所在组名称
-     */
-    @Override
-    public void resumeJob(String name, String groupName) {
-        try {
-            scheduler.resumeJob(JobKey.jobKey(name, groupName));
-        } catch (SchedulerException e) {
-            e.printStackTrace();
-        }
-    }
-
-
     /**
      * job 更新,更新频率和参数
      *
-     * @param cronExp   cron表达式
-     * @param param     参数
+     * @param cronExp cron表达式
+     * @param param   参数
      */
     @Override
     public void updateJob(TriggerKey triggerKey, String cronExp, Map<String, Object> param) {
@@ -153,9 +119,8 @@ public class QuartzServiceImpl implements QuartzService {
                 // 表达式调度构建器
                 CronScheduleBuilder scheduleBuilder = CronScheduleBuilder.cronSchedule(cronExp);
                 // 按新的cronExpression表达式重新构建trigger
-                trigger = trigger.getTriggerBuilder().withIdentity(triggerKey).withSchedule(scheduleBuilder).build();
+                trigger = trigger.getTriggerBuilder().startAt(new Date()).withIdentity(triggerKey).withSchedule(scheduleBuilder).build();
             }
-
             //修改map
             if (param != null) {
                 trigger.getJobDataMap().putAll(param);
@@ -163,7 +128,7 @@ public class QuartzServiceImpl implements QuartzService {
             // 按新的trigger重新设置job执行
             scheduler.rescheduleJob(triggerKey, trigger);
         } catch (Exception e) {
-            e.printStackTrace();
+            log.error("updateJob is fail, msg : ", e);
         }
     }
 
@@ -179,35 +144,10 @@ public class QuartzServiceImpl implements QuartzService {
             scheduler.pauseTrigger(TriggerKey.triggerKey(name, groupName));
             scheduler.unscheduleJob(TriggerKey.triggerKey(name, groupName));
             scheduler.deleteJob(JobKey.jobKey(name, groupName));
+            log.info("deleteJob name = {} , group = {}", name, groupName);
         } catch (Exception e) {
             log.error("deleteJob is fail:", e);
         }
     }
 
-
-    /**
-     * 启动所有定时任务
-     */
-    @Override
-    public void startAllJobs() {
-        try {
-            scheduler.start();
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
-    }
-
-    /**
-     * 关闭所有定时任务
-     */
-    @Override
-    public void shutdownAllJobs() {
-        try {
-            if (!scheduler.isShutdown()) {
-                scheduler.shutdown();
-            }
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
-    }
 }

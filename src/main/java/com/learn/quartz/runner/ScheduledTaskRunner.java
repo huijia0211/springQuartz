@@ -3,10 +3,7 @@ package com.learn.quartz.runner;
 import com.learn.quartz.dao.QuartTaskMapper;
 import com.learn.quartz.pojo.QuartTask;
 import com.learn.quartz.service.QuartzService;
-import com.learn.quartz.service.ScheduledTaskService;
 import lombok.extern.slf4j.Slf4j;
-import org.quartz.Scheduler;
-import org.quartz.SchedulerMetaData;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
@@ -14,7 +11,6 @@ import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
-import java.util.logging.Logger;
 
 /**
  * @see @Order注解的执行优先级是按value值从小到大顺序。

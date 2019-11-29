@@ -9,6 +9,8 @@ import java.util.Map;
 public interface QuartzService {
     void initAllTask(List<QuartTask> scheduledTaskBeanList);
 
+    void addJob(QuartTask scheduledTask);
+
     /**
      * 添加任务可以传参数
      *
@@ -19,22 +21,6 @@ public interface QuartzService {
      * @param param
      */
     void addJob(Class clazz, String jobName, String groupName, String cronExp, Map<String, Object> param);
-
-    /**
-     * 暂停任务
-     *
-     * @param name
-     * @param groupName
-     */
-    void pauseJob(String name, String groupName);
-
-    /**
-     * 恢复任务
-     *
-     * @param name
-     * @param groupName
-     */
-    void resumeJob(String name, String groupName);
 
 
     void updateJob(TriggerKey triggerKey, String cronExp, Map<String, Object> param);
@@ -47,13 +33,4 @@ public interface QuartzService {
      */
     void deleteJob(String name, String groupName);
 
-    /**
-     * 启动所有任务
-     */
-    void startAllJobs();
-
-    /**
-     * 关闭所有任务
-     */
-    void shutdownAllJobs();
 }
