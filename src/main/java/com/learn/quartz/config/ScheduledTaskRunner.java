@@ -1,4 +1,4 @@
-package com.learn.quartz.runner;
+package com.learn.quartz.config;
 
 import com.learn.quartz.dao.QuartTaskMapper;
 import com.learn.quartz.pojo.QuartTask;
@@ -20,7 +20,6 @@ import java.util.List;
 @Order(value = 1)
 @Slf4j
 public class ScheduledTaskRunner implements ApplicationRunner {
-
 
     @Autowired
     private QuartTaskMapper taskMapper;

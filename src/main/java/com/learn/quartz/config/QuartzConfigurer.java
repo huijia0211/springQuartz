@@ -1,6 +1,5 @@
 package com.learn.quartz.config;
 
-import com.learn.quartz.runner.TaskJobFactory;
 import org.quartz.Scheduler;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.config.PropertiesFactoryBean;
@@ -25,8 +24,8 @@ public class QuartzConfigurer {
     @Autowired
     private PlatformTransactionManager txManager;
 
-    @Bean(name = "SchedulerFactory")
-    public SchedulerFactoryBean schedulerFactoryBean() throws IOException {
+    @Bean(name = "quartzScheduler")
+    public SchedulerFactoryBean quartzScheduler() throws IOException {
         //获取配置属性
         PropertiesFactoryBean propertiesFactoryBean = new PropertiesFactoryBean();
         propertiesFactoryBean.setLocation(new ClassPathResource("/quartz.properties"));
@@ -35,18 +34,19 @@ public class QuartzConfigurer {
         //创建SchedulerFactoryBean
         SchedulerFactoryBean factory = new SchedulerFactoryBean();
         factory.setQuartzProperties(propertiesFactoryBean.getObject());
+        //设置job工厂，使job可以自动注入
         factory.setJobFactory(jobFactory);
+        //设置数据源
         factory.setDataSource(dataSource);
+        //设置事务
         factory.setTransactionManager(txManager);
+        //设置重写已存在的Job
         factory.setOverwriteExistingJobs(true);
         return factory;
     }
 
-    /*
-     * 通过SchedulerFactoryBean获取Scheduler的实例
-     */
     @Bean(name = "scheduler")
     public Scheduler scheduler() throws IOException {
-        return schedulerFactoryBean().getScheduler();
+        return quartzScheduler().getScheduler();
     }
 }

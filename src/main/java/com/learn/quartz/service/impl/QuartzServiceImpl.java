@@ -18,7 +18,7 @@ import java.util.Map;
 public class QuartzServiceImpl implements QuartzService {
 
     @Autowired
-    Scheduler scheduler;
+    private Scheduler scheduler;
 
     /**
      * 程序启动时初始化 ==> 启动所有正常状态的任务

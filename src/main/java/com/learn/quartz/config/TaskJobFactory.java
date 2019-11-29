@@ -1,4 +1,4 @@
-package com.learn.quartz.runner;
+package com.learn.quartz.config;
 
 import org.quartz.spi.TriggerFiredBundle;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -8,6 +8,7 @@ import org.springframework.stereotype.Component;
 
 @Component
 public class TaskJobFactory extends AdaptableJobFactory {
+
     @Autowired
     AutowireCapableBeanFactory capableBeanFactory;
 
