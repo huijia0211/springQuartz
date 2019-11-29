@@ -3,7 +3,7 @@ package com.learn.quartz.controller;
 import com.learn.quartz.dao.QuartTaskMapper;
 import com.learn.quartz.pojo.QuartTask;
 import com.learn.quartz.service.QuartzService;
-import org.quartz.TriggerKey;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -12,6 +12,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 @RestController
+@Slf4j
 public class JobController {
 
     @Autowired
@@ -19,28 +20,27 @@ public class JobController {
 
     @Autowired
     private QuartTaskMapper quartTaskMapper;
+
     /**
      * 添加新任务
      *
      * @return
      */
-    @RequestMapping("/addJob")
+    @RequestMapping("/updateJobCron")
     public Object updateJobCron(Integer id, String cron) {
         QuartTask quartTask = quartTaskMapper.selectByPrimaryKey(id);
         quartTask.setCorn(cron);
         quartTaskMapper.updateByPrimaryKeySelective(quartTask);
         String name = quartTask.getName();
         String groupName = quartTask.getGroupName();
-        TriggerKey triggerKey = TriggerKey.triggerKey(name, groupName);
-        if (Integer.valueOf(1).equals(quartTask.getStatus())) {
-            service.updateJob(triggerKey, cron, null);
-        }
         Map<String, String> resultMap = new HashMap<>();
+        if (Integer.valueOf(1).equals(quartTask.getStatus())) {
+            service.updateJob(quartTask);
+        }
         resultMap.put("groupName", groupName);
         resultMap.put("jobName", name);
         return resultMap;
     }
-
 
     /**
      * 删除任务
@@ -57,11 +57,11 @@ public class JobController {
         if (Integer.valueOf(1).equals(status)) {
             service.addJob(quartTask);
         } else {
-            service.deleteJob(name, groupName);
+            service.deleteJob(quartTask);
         }
         Map<String, String> resultMap = new HashMap<>();
         resultMap.put("groupName", groupName);
         resultMap.put("jobName", name);
         return resultMap;
-    }    
+    }
 }
