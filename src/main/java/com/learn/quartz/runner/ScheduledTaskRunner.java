@@ -2,6 +2,7 @@ package com.learn.quartz.runner;
 
 import com.learn.quartz.dao.QuartTaskMapper;
 import com.learn.quartz.pojo.QuartTask;
+import com.learn.quartz.service.QuartzService;
 import com.learn.quartz.service.ScheduledTaskService;
 import lombok.extern.slf4j.Slf4j;
 import org.quartz.Scheduler;
@@ -29,7 +30,7 @@ public class ScheduledTaskRunner implements ApplicationRunner {
     private QuartTaskMapper taskMapper;
 
     @Autowired
-    private ScheduledTaskService scheduledTaskService;
+    private QuartzService quartzService;
 
     /**
      * 程序启动完毕后,需要自启的任务
@@ -37,8 +38,8 @@ public class ScheduledTaskRunner implements ApplicationRunner {
     @Override
     public void run(ApplicationArguments args) throws Exception {
         log.info(" >>>>>> 项目启动完毕, 开启 => 需要自启的任务 开始!");
-        List<QuartTask> activatedTaskList = taskMapper.getActivatedTaskList();
-        scheduledTaskService.initAllTask(activatedTaskList);
+        List<QuartTask> activatedTaskList = taskMapper.getAllTask();
+        quartzService.initAllTask(activatedTaskList);
         log.info(" >>>>>> 项目启动完毕, 开启 => 需要自启的任务 结束！");
     }
 }

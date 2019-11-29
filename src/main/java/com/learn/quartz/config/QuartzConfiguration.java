@@ -19,7 +19,7 @@ import org.springframework.context.annotation.Configuration;
 @Configuration
 public class QuartzConfiguration {
  
-	private static final int TIME = 2; // 更新频率
+//	private static final int TIME = 2; // 更新频率
 
 //	public JobDetail weatherDataSyncJobDetail() {
 //		return JobBuilder.newJob(WeatherDataSyncJob.class).withIdentity("weatherDataSyncJob")

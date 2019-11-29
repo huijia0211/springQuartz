@@ -16,6 +16,8 @@ public class QuartTask implements Serializable {
 
     private String name;
 
+    private String groupName;
+
     private String jobClass;
 
     private String method;

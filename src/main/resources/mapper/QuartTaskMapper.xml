@@ -5,6 +5,7 @@
     <resultMap id="BaseResultMap" type="com.learn.quartz.pojo.QuartTask">
         <id column="id" jdbcType="INTEGER" property="id" />
         <result column="name" jdbcType="VARCHAR" property="name" />
+        <result column="group_name" jdbcType="VARCHAR" property="groupName" />
         <result column="job_class" jdbcType="VARCHAR" property="jobClass" />
         <result column="method" jdbcType="VARCHAR" property="method" />
         <result column="corn" jdbcType="VARCHAR" property="corn" />
@@ -12,7 +13,7 @@
     </resultMap>
 
     <sql id="Base_Column_List">
-    id, `name`, job_class, `method`, corn, `status`
+    id, `name`, `group_name` ,job_class, `method`, corn, `status`
   </sql>
 
     <select id="selectByPrimaryKey" parameterType="java.lang.Integer" resultMap="BaseResultMap">
