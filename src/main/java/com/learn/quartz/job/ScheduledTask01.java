@@ -11,9 +11,11 @@ import org.quartz.JobExecutionException;
 @Setter
 public class ScheduledTask01 implements Job {
 
+    private String params;
+
     @Override
     public void execute(JobExecutionContext context) throws JobExecutionException {
         JobDataMap dataMap = context.getMergedJobDataMap();
-        log.info("ScheduledTask => 01 run 当前线程名称 {} , Data = {}", Thread.currentThread().getName(), dataMap.getString("params"));
+        log.info("ScheduledTask => 01 run 当前线程名称 {}, Data = {}", Thread.currentThread().getName(), params);
     }
 }

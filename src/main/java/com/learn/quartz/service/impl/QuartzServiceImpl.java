@@ -63,9 +63,9 @@ public class QuartzServiceImpl implements QuartzService {
             //构建job信息
             JobDetail jobDetail = JobBuilder.newJob(((Job) aClass.newInstance()).getClass()).withIdentity(name, groupName).build();
             //表达式调度构建器(即任务执行的时间)
-            CronScheduleBuilder scheduleBuilder = CronScheduleBuilder.cronSchedule(corn);
+            CronScheduleBuilder scheduleBuilder = CronScheduleBuilder.cronSchedule(corn).withMisfireHandlingInstructionDoNothing();
             //按新的cronExpression表达式构建一个新的trigger
-            CronTrigger trigger = TriggerBuilder.newTrigger().startAt(new Date()).withIdentity(name, groupName).withSchedule(scheduleBuilder).build();
+            CronTrigger trigger = TriggerBuilder.newTrigger().startNow().withIdentity(name, groupName).withSchedule(scheduleBuilder).build();
             //获得JobDataMap，写入数据
             trigger.getJobDataMap().putAll(paramMap);
             scheduler.scheduleJob(jobDetail, trigger);
@@ -93,9 +93,9 @@ public class QuartzServiceImpl implements QuartzService {
             CronTrigger trigger = (CronTrigger) scheduler.getTrigger(triggerKey);
             if (cron != null) {
                 // 表达式调度构建器
-                CronScheduleBuilder scheduleBuilder = CronScheduleBuilder.cronSchedule(cron);
+                CronScheduleBuilder scheduleBuilder = CronScheduleBuilder.cronSchedule(cron).withMisfireHandlingInstructionDoNothing();
                 // 按新的cronExpression表达式重新构建trigger
-                trigger = trigger.getTriggerBuilder().startAt(new Date()).withIdentity(triggerKey).withSchedule(scheduleBuilder).build();
+                trigger = trigger.getTriggerBuilder().startNow().withIdentity(triggerKey).withSchedule(scheduleBuilder).build();
             }
             //修改map
             trigger.getJobDataMap().putAll(paramMap);
