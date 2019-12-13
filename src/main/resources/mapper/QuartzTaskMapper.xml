@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.learn.quartz.dao.QuartzTaskMapper">
+    <resultMap id="BaseResultMap" type="com.learn.quartz.pojo.QuartzTask">
+        <id column="id" jdbcType="INTEGER" property="id" />
+        <result column="task_name" jdbcType="VARCHAR" property="taskName" />
+        <result column="group_name" jdbcType="VARCHAR" property="groupName" />
+        <result column="job_class" jdbcType="VARCHAR" property="jobClass" />
+        <result column="params" jdbcType="VARCHAR" property="params" />
+        <result column="cron" jdbcType="VARCHAR" property="cron" />
+        <result column="status" jdbcType="BIT" property="status" />
+    </resultMap>
+    <sql id="Base_Column_List">
+    id, task_name, group_name, job_class, params, cron, `status`
+  </sql>
+
+    <select id="selectByPrimaryKey" parameterType="java.lang.Integer" resultMap="BaseResultMap">
+        select
+        <include refid="Base_Column_List" />
+        from quartz_task
+        where id = #{id,jdbcType=INTEGER}
+    </select>
+
+    <update id="updateByPrimaryKeySelective" parameterType="com.learn.quartz.pojo.QuartzTask">
+        update quartz_task
+        <set>
+            <if test="taskName != null">
+                task_name = #{taskName,jdbcType=VARCHAR},
+            </if>
+            <if test="groupName != null">
+                group_name = #{groupName,jdbcType=VARCHAR},
+            </if>
+            <if test="jobClass != null">
+                job_class = #{jobClass,jdbcType=VARCHAR},
+            </if>
+            <if test="params != null">
+                params = #{params,jdbcType=VARCHAR},
+            </if>
+            <if test="cron != null">
+                cron = #{cron,jdbcType=VARCHAR},
+            </if>
+            <if test="status != null">
+                `status` = #{status,jdbcType=BIT},
+            </if>
+        </set>
+        where id = #{id,jdbcType=INTEGER}
+    </update>
+
+    <select id="getAllTask" resultType="com.learn.quartz.pojo.QuartzTask">
+        select
+        <include refid="Base_Column_List"/>
+        from
+        quartz_task
+    </select>
+
+</mapper>

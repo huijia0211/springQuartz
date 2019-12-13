@@ -1,8 +1,8 @@
 package com.learn.quartz.job;
 
-import com.learn.quartz.dao.QuartTaskMapper;
-import com.learn.quartz.pojo.QuartTask;
-import com.learn.quartz.service.QuartzService;
+import com.learn.quartz.dao.QuartzTaskMapper;
+import com.learn.quartz.pojo.QuartzTask;
+import com.learn.quartz.service.QuartzTaskService;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import org.quartz.Job;
@@ -19,16 +19,17 @@ import java.util.List;
 public class ScheduledTask02 implements Job {
 
     @Autowired
-    private QuartTaskMapper mapper;
+    private QuartzTaskService quartzTaskService;
+
+    private Integer id;
 
     private String params;
 
     @Override
     public void execute(JobExecutionContext context) throws JobExecutionException {
-        JobDataMap dataMap = context.getMergedJobDataMap();
-        if (mapper!=null){
-            List<QuartTask> allTask = mapper.getAllTask();
-            log.info("allTask = {}", allTask);
+        if (quartzTaskService!=null){
+            QuartzTask quartzTask = quartzTaskService.selectByPrimaryKey(id);
+            log.info("ScheduledTask => 02 quartzTask = {}", quartzTask);
         }
         log.info("ScheduledTask => 02 run 当前线程名称 {}, Data = {}", Thread.currentThread().getName(), params);
     }

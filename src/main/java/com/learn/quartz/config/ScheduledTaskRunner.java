@@ -1,8 +1,9 @@
 package com.learn.quartz.config;
 
-import com.learn.quartz.dao.QuartTaskMapper;
-import com.learn.quartz.pojo.QuartTask;
+import com.learn.quartz.dao.QuartzTaskMapper;
+import com.learn.quartz.pojo.QuartzTask;
 import com.learn.quartz.service.QuartzService;
+import com.learn.quartz.service.QuartzTaskService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.ApplicationArguments;
@@ -22,7 +23,7 @@ import java.util.List;
 public class ScheduledTaskRunner implements ApplicationRunner {
 
     @Autowired
-    private QuartTaskMapper taskMapper;
+    private QuartzTaskService quartzTaskService;
 
     @Autowired
     private QuartzService quartzService;
@@ -33,7 +34,7 @@ public class ScheduledTaskRunner implements ApplicationRunner {
     @Override
     public void run(ApplicationArguments args) throws Exception {
         log.info(" >>>>>> 项目启动完毕, 开启 => 需要自启的任务 开始!");
-        List<QuartTask> activatedTaskList = taskMapper.getAllTask();
+        List<QuartzTask> activatedTaskList = quartzTaskService.getAllTask();
         quartzService.initAllTask(activatedTaskList);
         log.info(" >>>>>> 项目启动完毕, 开启 => 需要自启的任务 结束！");
     }

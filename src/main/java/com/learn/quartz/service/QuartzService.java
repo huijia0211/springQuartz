@@ -1,16 +1,16 @@
 package com.learn.quartz.service;
 
-import com.learn.quartz.pojo.QuartTask;
+import com.learn.quartz.pojo.QuartzTask;
 
 import java.util.List;
 
 public interface QuartzService {
-    void initAllTask(List<QuartTask> scheduledTaskBeanList) throws Exception;
+    void initAllTask(List<QuartzTask> scheduledTaskBeanList) throws Exception;
 
-    void addJob(QuartTask scheduledTask);
+    void addJob(QuartzTask scheduledTask);
 
-    void updateJob(QuartTask quartTask);
+    void updateJob(QuartzTask quartzTask);
 
-    void deleteJob(QuartTask quartTask);
+    void deleteJob(QuartzTask quartzTask);
 
 }
